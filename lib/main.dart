@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'WakeUp App',
+      title: 'Awaken',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const ComputerListScreen(), // Set your computer list screen as
       // home

@@ -120,7 +120,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Wakeup'),
+            title: const Text('Awaken'),
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
