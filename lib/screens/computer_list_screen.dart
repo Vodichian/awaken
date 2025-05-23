@@ -119,6 +119,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                 .toList(); // Get the latest list of computers from the updated box
 
         return Scaffold(
+          backgroundColor: Colors.indigo[200],
           appBar: AppBar(
             title: const Text('Awaken'),
             actions: [
@@ -171,10 +172,31 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                           ),
                           elevation: 2.0,
                           child: ListTile(
-                            title: Text(computer.name),
-                            subtitle: Text(computer.macAddress),
+                            // 1. Add the icon to the far left
+                            leading: const Icon(
+                              Icons.computer, // Or any other icon you prefer
+                              size: 36.0, // Adjust size as needed
+                              color: Colors.blue, // Optional: customize icon color
+                            ),
+                            // 2. Make the computer name more prominent
+                            title: Text(
+                              computer.name,
+                              style: const TextStyle(
+                                fontSize: 18.0, // Increase font size
+                                fontWeight: FontWeight.bold, // Make it bold
+                              ),
+                            ),
+                            // 3. Make the MAC address less prominent
+                            subtitle: Text(
+                              computer.macAddress,
+                              style: TextStyle(
+                                fontSize: 13.0, // Smaller font size
+                                color: Colors.grey[600], // Lighter color
+                              ),
+                            ),
                             onTap: () => _wakeUpComputer(computer),
-                          ),
+                            // Optional: Add some padding if needed
+                            contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),                          ),
                         ),
                       );
                     },
