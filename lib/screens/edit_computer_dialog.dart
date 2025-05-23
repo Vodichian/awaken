@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/computer.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class EditComputerDialog extends StatefulWidget {
   final Computer computerToEdit;
@@ -15,6 +16,7 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
   late TextEditingController _nameController;
   late TextEditingController _macAddressController;
   late TextEditingController _broadcastAddressController;
+  late Color _selectedColor;
 
   @override
   void initState() {
@@ -25,6 +27,9 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
         TextEditingController(text: widget.computerToEdit.macAddress);
     _broadcastAddressController =
         TextEditingController(text: widget.computerToEdit.broadcastAddress);
+    _selectedColor = widget.computerToEdit.color != null
+        ? Color(widget.computerToEdit.color!)
+        : Colors.white; // Default if no color was set
   }
 
   @override
@@ -36,6 +41,43 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
     super.dispose();
   }
 
+  // Function to show color picker
+  void _pickColor() {
+    Color pickerColor = _selectedColor; // Temporary color for the picker dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Pick a card color'),
+        content: SingleChildScrollView(
+          child: BlockPicker( // You can use MaterialPicker, ColorPicker as well
+            pickerColor: pickerColor,
+            onColorChanged: (color) {
+              pickerColor = color; // Update the temporary color
+            },
+            // availableColors: [ ... ] // Optionally provide a list of predefined colors
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Select'),
+            onPressed: () {
+              setState(() {
+                _selectedColor = pickerColor; // Apply the selected color
+              });
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   void _saveComputer() {
     if (_formKey.currentState!.validate()) {
       // Create an updated Computer object
@@ -43,6 +85,7 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
         name: _nameController.text,
         macAddress: _macAddressController.text,
         broadcastAddress: _broadcastAddressController.text,
+        color: _selectedColor.toARGB32(),
       );
       // Return the updated computer object
       Navigator.of(context).pop(updatedComputer);
@@ -91,6 +134,38 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
                   // Add more specific IP address validation if needed
                   return null;
                 },
+              ),
+              const SizedBox(height: 20),
+              // Color Picker Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Card Color:'),
+                  GestureDetector(
+                    onTap: _pickColor,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                          color: _selectedColor,
+                          border: Border.all(color: Colors.grey.shade400),
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withValues(alpha: 0.3),
+                              spreadRadius: 1,
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            )
+                          ]
+                      ),
+                      // Optional: display a checkmark if color is dark for better visibility
+                      child: _selectedColor.computeLuminance() < 0.5
+                          ? const Icon(Icons.check, color: Colors.white, size: 20)
+                          : null,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

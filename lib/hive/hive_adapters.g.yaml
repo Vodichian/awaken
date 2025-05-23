@@ -5,7 +5,7 @@ nextTypeId: 1
 types:
   Computer:
     typeId: 0
-    nextIndex: 3
+    nextIndex: 4
     fields:
       name:
         index: 0
@@ -13,3 +13,5 @@ types:
         index: 1
       broadcastAddress:
         index: 2
+      color:
+        index: 3

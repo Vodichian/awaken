@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/computer.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class AddComputerDialog extends StatefulWidget {
   const AddComputerDialog({super.key});
@@ -13,6 +14,33 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
   final _nameController = TextEditingController();
   final _macAddressController = TextEditingController();
   final _broadcastAddressController = TextEditingController();
+  Color _selectedColor = Colors.white; // Default color is white
+
+  // Function to show color picker
+  void _pickColor() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Pick a color!'),
+        content: SingleChildScrollView(
+          child: BlockPicker( // Or MaterialPicker, ColorPicker, etc.
+            pickerColor: _selectedColor,
+            onColorChanged: (color) {
+              setState(() => _selectedColor = color);
+            },
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Got it'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -28,6 +56,7 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
         name: _nameController.text,
         macAddress: _macAddressController.text,
         broadcastAddress: _broadcastAddressController.text,
+        color: _selectedColor.toARGB32(),
       );
       Navigator.of(context).pop(newComputer); // Return the new computer
     }
@@ -75,6 +104,25 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
                   // You might want to add IP address validation
                   return null;
                 },
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Text('Card Color:'),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: _pickColor,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: _selectedColor,
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

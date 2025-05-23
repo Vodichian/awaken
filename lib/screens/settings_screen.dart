@@ -124,6 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           macAddress: item['macAddress'],
           broadcastAddress: item['broadcastAddress'] ??
               '', // Handle missing broadcastAddress
+          color: item['color'] ?? Colors.white.toARGB32(), // Handle missing color
         );
         _computerBox.add(computer); // Add to Hive
       } catch (e) {
