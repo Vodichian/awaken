@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:window_size/window_size.dart';
 import 'models/computer.dart';
 import 'screens/computer_list_screen.dart';
-import 'package:wakeup/hive/hive_registrar.g.dart';
+import 'package:awaken/hive/hive_registrar.g.dart';
 import 'package:logger/logger.dart';
 
 var logger = Logger(printer: PrettyPrinter());
