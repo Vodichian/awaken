@@ -40,6 +40,44 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
     }
   }
 
+  Future<bool?> _showDeleteConfirmationDialog(
+    BuildContext context,
+    String computerName,
+  ) async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // User must tap button!
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: Text(
+            'Are you sure you want to delete "$computerName"? This action cannot be undone.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(
+                  dialogContext,
+                ).pop(false); // Pop with 'false' indicating cancellation
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              // Make delete button stand out
+              child: const Text('Delete'),
+              onPressed: () {
+                Navigator.of(
+                  dialogContext,
+                ).pop(true); // Pop with 'true' indicating confirmation
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showEditComputerDialog(Computer computerToEdit) async {
     final updatedComputer = await showDialog<Computer>(
       context: context,
@@ -72,7 +110,9 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
     );
     if (key != null) {
       _computerBox.delete(key);
-      // No need to manually refresh setState() if using ValueListenableBuilder
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('"${computer.name}" has been deleted.')),
+      );
     }
   }
 
@@ -155,8 +195,16 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                               label: 'Edit',
                             ),
                             SlidableAction(
-                              onPressed: (context) {
-                                _deleteComputer(computer);
+                              onPressed: (slidableContext) async {
+                                // slidableContext is the BuildContext from SlidableAction
+                                final bool? confirmed =
+                                    await _showDeleteConfirmationDialog(
+                                      context,
+                                      computer.name,
+                                    ); // Use the main screen's context
+                                if (confirmed == true) {
+                                  _deleteComputer(computer);
+                                }
                               },
                               backgroundColor: const Color(0xFFFE4A49),
                               foregroundColor: Colors.white,
@@ -166,9 +214,11 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                           ],
                         ),
                         child: Card(
-                          color: computer.color != null
-                              ? Color(computer.color!)
-                              : Theme.of(context).cardTheme.color ?? Colors.white, // Fallback
+                          color:
+                              computer.color != null
+                                  ? Color(computer.color!)
+                                  : Theme.of(context).cardTheme.color ??
+                                      Colors.white, // Fallback
                           margin: const EdgeInsets.symmetric(
                             horizontal: 8.0,
                             vertical: 4.0,
@@ -179,10 +229,15 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                             leading: Icon(
                               Icons.computer, // Or any other icon you prefer
                               size: 36.0, // Adjust size as needed
-                              color: computer.color != null &&
-                                  ThemeData.estimateBrightnessForColor(Color(computer.color!)) == Brightness.dark
-                                  ? Colors.white
-                                  : Theme.of(context).colorScheme.primary,                            ),
+                              color:
+                                  computer.color != null &&
+                                          ThemeData.estimateBrightnessForColor(
+                                                Color(computer.color!),
+                                              ) ==
+                                              Brightness.dark
+                                      ? Colors.white
+                                      : Theme.of(context).colorScheme.primary,
+                            ),
                             // 2. Make the computer name more prominent
                             title: Text(
                               computer.name,
@@ -190,10 +245,14 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                                 fontSize: 18.0, // Increase font size
                                 fontWeight: FontWeight.bold, // Make it bold
                                 // Adjust text color for visibility
-                                color: computer.color != null &&
-                                    ThemeData.estimateBrightnessForColor(Color(computer.color!)) == Brightness.dark
-                                    ? Colors.white
-                                    : Colors.black87, // Or theme default
+                                color:
+                                    computer.color != null &&
+                                            ThemeData.estimateBrightnessForColor(
+                                                  Color(computer.color!),
+                                                ) ==
+                                                Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black87, // Or theme default
                               ),
                             ),
                             // 3. Make the MAC address less prominent
@@ -202,14 +261,23 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                               style: TextStyle(
                                 fontSize: 13.0, // Smaller font size
                                 // Adjust subtitle color for visibility
-                                color: computer.color != null &&
-                                    ThemeData.estimateBrightnessForColor(Color(computer.color!)) == Brightness.dark
-                                    ? Colors.white70
-                                    : Colors.grey[600],                              ),
+                                color:
+                                    computer.color != null &&
+                                            ThemeData.estimateBrightnessForColor(
+                                                  Color(computer.color!),
+                                                ) ==
+                                                Brightness.dark
+                                        ? Colors.white70
+                                        : Colors.grey[600],
+                              ),
                             ),
                             onTap: () => _wakeUpComputer(computer),
                             // Optional: Add some padding if needed
-                            contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),                          ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8.0,
+                              horizontal: 16.0,
+                            ),
+                          ),
                         ),
                       );
                     },
