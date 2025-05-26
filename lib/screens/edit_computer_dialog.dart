@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/computer.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
+import '../services/wol_service.dart';
+
 class EditComputerDialog extends StatefulWidget {
   final Computer computerToEdit;
 
@@ -118,8 +120,13 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a MAC address';
+                  } else {
+                    try {
+                      WolService.parseMacAddress(value);
+                    } catch (e) {
+                      return 'Invalid MAC address format';
+                    }
                   }
-                  // Add more specific MAC address validation if needed
                   return null;
                 },
               ),
@@ -130,8 +137,11 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a broadcast address';
+                  } else {
+                    if (!WolService.isValidBroadcastAddress(value)) {
+                      return 'Invalid broadcast address format';
+                    }
                   }
-                  // Add more specific IP address validation if needed
                   return null;
                 },
               ),

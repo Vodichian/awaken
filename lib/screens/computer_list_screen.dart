@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../models/computer.dart';
 import '../services/wol_service.dart';
@@ -8,6 +9,9 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'add_computer_dialog.dart';
 import 'edit_computer_dialog.dart';
 import 'settings_screen.dart';
+
+var logger = Logger(printer: PrettyPrinter());
+
 
 class ComputerListScreen extends StatefulWidget {
   const ComputerListScreen({super.key});
@@ -116,7 +120,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
     }
   }
 
-  void _wakeUpComputer(Computer computer) {
+  void _wakeUpComputer(Computer computer) async {
     // Get the broadcast address from the settings box (you'll need to provide this as well)
     // For now, let's assume you have access to the settingsBox here
     // Or you could pass the broadcast address from the settings screen if preferred
@@ -126,7 +130,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
     ); // Don't listen for changes here
     final defaultBroadcastAddress = settingsBox.get(
       'broadcastAddress',
-      defaultValue: '255.255.255.255',
+      defaultValue: '192.168.1.255',
     );
 
     final broadcastAddressToSend =
@@ -134,10 +138,32 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
             ? computer.broadcastAddress
             : defaultBroadcastAddress;
 
-    _wolService.sendMagicPacket(computer.macAddress, broadcastAddressToSend);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Sending magic packet to ${computer.name}...')),
-    );
+    // _wolService.sendMagicPacket(computer.macAddress, broadcastAddressToSend);
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(content: Text('Sending magic packet to ${computer.name}...')),
+    // );
+    try {
+      await _wolService.sendMagicPacket(computer.macAddress, broadcastAddressToSend);
+      // Optional: Show a success message if you want to differentiate
+      // (though the initial message might be sufficient)
+      if (mounted) { // Check if the widget is still in the tree
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Magic packet sent successfully to ${computer.name}!')),
+        );
+      }
+    } catch (e) {
+      // Handle the error: Show an error message to the user
+      if (mounted) { // Check if the widget is still in the tree
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send magic packet to ${computer.name}: ${e.toString()}'),
+            backgroundColor: Colors.red, // Make error SnackBar distinct
+          ),
+        );
+      }
+      // You might also want to log the error for debugging purposes
+      logger.e('Error sending magic packet: $e');
+    }
   }
 
   // Function to navigate to the settings screen
