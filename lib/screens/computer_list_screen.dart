@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +14,6 @@ import 'edit_computer_dialog.dart';
 import 'settings_screen.dart';
 
 var logger = Logger(printer: PrettyPrinter());
-
 
 class ComputerListScreen extends StatefulWidget {
   const ComputerListScreen({super.key});
@@ -120,17 +122,14 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
     }
   }
 
-  void _wakeUpComputer(Computer computer) async {
-    // Get the broadcast address from the settings box (you'll need to provide this as well)
-    // For now, let's assume you have access to the settingsBox here
-    // Or you could pass the broadcast address from the settings screen if preferred
-    final settingsBox = Provider.of<Box<dynamic>>(
-      context,
-      listen: false,
-    ); // Don't listen for changes here
+  Future<bool> _wakeUpComputer(
+    Computer computer, {
+    bool showSuccessSnackbar = true,
+  }) async {
+    final settingsBox = Provider.of<Box<dynamic>>(context, listen: false);
     final defaultBroadcastAddress = settingsBox.get(
       'broadcastAddress',
-      defaultValue: '192.168.1.255',
+      defaultValue: '192.168.1.255', // Make sure this default is appropriate
     );
 
     final broadcastAddressToSend =
@@ -138,31 +137,39 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
             ? computer.broadcastAddress
             : defaultBroadcastAddress;
 
-    // _wolService.sendMagicPacket(computer.macAddress, broadcastAddressToSend);
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(content: Text('Sending magic packet to ${computer.name}...')),
-    // );
     try {
-      await _wolService.sendMagicPacket(computer.macAddress, broadcastAddressToSend);
-      // Optional: Show a success message if you want to differentiate
-      // (though the initial message might be sufficient)
-      if (mounted) { // Check if the widget is still in the tree
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Magic packet sent successfully to ${computer.name}!')),
-        );
-      }
-    } catch (e) {
-      // Handle the error: Show an error message to the user
-      if (mounted) { // Check if the widget is still in the tree
+      logger.d(
+        'Attempting to send WoL packet to ${computer.name} (${computer.macAddress}) via $broadcastAddressToSend',
+      );
+      await _wolService.sendMagicPacket(
+        computer.macAddress,
+        broadcastAddressToSend,
+      );
+      logger.d('WoL packet supposedly sent to ${computer.name}.');
+
+      if (mounted && showSuccessSnackbar) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send magic packet to ${computer.name}: ${e.toString()}'),
-            backgroundColor: Colors.red, // Make error SnackBar distinct
+            content: Text(
+              'Magic packet sent successfully to ${computer.name}!',
+            ),
           ),
         );
       }
-      // You might also want to log the error for debugging purposes
-      logger.e('Error sending magic packet: $e');
+      return true; // Indicate success
+    } catch (e) {
+      logger.e('Error sending magic packet to ${computer.name}: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to send magic packet to ${computer.name}: ${e.toString()}',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return false; // Indicate failure
     }
   }
 
@@ -239,38 +246,64 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                             ),
                           ],
                         ),
-                        child: Card(
-                          color:
-                              computer.color != null
-                                  ? Color(computer.color!)
-                                  : Theme.of(context).cardTheme.color ??
-                                      Colors.white, // Fallback
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                            vertical: 4.0,
-                          ),
-                          elevation: 2.0,
-                          child: ListTile(
-                            // 1. Add the icon to the far left
-                            leading: Icon(
-                              Icons.computer, // Or any other icon you prefer
-                              size: 36.0, // Adjust size as needed
-                              color:
-                                  computer.color != null &&
-                                          ThemeData.estimateBrightnessForColor(
-                                                Color(computer.color!),
-                                              ) ==
-                                              Brightness.dark
-                                      ? Colors.white
-                                      : Theme.of(context).colorScheme.primary,
+                        child: GestureDetector(
+                          onTap: () {
+                            _wakeUpComputer(computer);
+                          },
+                          onLongPress: () async {
+                            logger.d('Long press detected on ${computer.name}');
+                            // Send WoL packet (suppress the default snackbar for a cleaner exit)
+                            bool success = await _wakeUpComputer(
+                              computer,
+                              showSuccessSnackbar: false,
+                            );
+                            if (success) {
+                              logger.d(
+                                'WoL packet sent successfully on long press. Closing app.',
+                              );
+                              // If successful, close the app.
+                              // For mobile platforms (Android/iOS):
+                              if (Platform.isAndroid || Platform.isIOS) {
+                                SystemNavigator.pop(); // This is the most common way to exit.
+                              } else {
+                                // exit(0); // This is a more forceful exit, use with caution.
+                                logger.w(
+                                  'App closing not implemented for this platform via long press.',
+                                );
+                              }
+                            } else {
+                              logger.d(
+                                'WoL packet failed to send on long press. App will not close.',
+                              );
+                              // Optionally, show a specific message for long-press failure if desired
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Failed to send WoL packet. App not closing.',
+                                    ),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: Card(
+                            color:
+                                computer.color != null
+                                    ? Color(computer.color!)
+                                    : Theme.of(context).cardTheme.color ??
+                                        Colors.white, // Fallback
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                              vertical: 4.0,
                             ),
-                            // 2. Make the computer name more prominent
-                            title: Text(
-                              computer.name,
-                              style: TextStyle(
-                                fontSize: 18.0, // Increase font size
-                                fontWeight: FontWeight.bold, // Make it bold
-                                // Adjust text color for visibility
+                            elevation: 2.0,
+                            child: ListTile(
+                              // 1. Add the icon to the far left
+                              leading: Icon(
+                                Icons.computer, // Or any other icon you prefer
+                                size: 36.0, // Adjust size as needed
                                 color:
                                     computer.color != null &&
                                             ThemeData.estimateBrightnessForColor(
@@ -278,30 +311,46 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                                                 ) ==
                                                 Brightness.dark
                                         ? Colors.white
-                                        : Colors.black87, // Or theme default
+                                        : Theme.of(context).colorScheme.primary,
                               ),
-                            ),
-                            // 3. Make the MAC address less prominent
-                            subtitle: Text(
-                              computer.macAddress,
-                              style: TextStyle(
-                                fontSize: 13.0, // Smaller font size
-                                // Adjust subtitle color for visibility
-                                color:
-                                    computer.color != null &&
-                                            ThemeData.estimateBrightnessForColor(
-                                                  Color(computer.color!),
-                                                ) ==
-                                                Brightness.dark
-                                        ? Colors.white70
-                                        : Colors.grey[600],
+                              // 2. Make the computer name more prominent
+                              title: Text(
+                                computer.name,
+                                style: TextStyle(
+                                  fontSize: 18.0, // Increase font size
+                                  fontWeight: FontWeight.bold, // Make it bold
+                                  // Adjust text color for visibility
+                                  color:
+                                      computer.color != null &&
+                                              ThemeData.estimateBrightnessForColor(
+                                                    Color(computer.color!),
+                                                  ) ==
+                                                  Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black87, // Or theme default
+                                ),
                               ),
-                            ),
-                            onTap: () => _wakeUpComputer(computer),
-                            // Optional: Add some padding if needed
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 8.0,
-                              horizontal: 16.0,
+                              // 3. Make the MAC address less prominent
+                              subtitle: Text(
+                                computer.macAddress,
+                                style: TextStyle(
+                                  fontSize: 13.0, // Smaller font size
+                                  // Adjust subtitle color for visibility
+                                  color:
+                                      computer.color != null &&
+                                              ThemeData.estimateBrightnessForColor(
+                                                    Color(computer.color!),
+                                                  ) ==
+                                                  Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.grey[600],
+                                ),
+                              ),
+                              // Optional: Add some padding if needed
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                                horizontal: 16.0,
+                              ),
                             ),
                           ),
                         ),
