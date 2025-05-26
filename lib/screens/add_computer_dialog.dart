@@ -14,8 +14,11 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _macAddressController = TextEditingController();
-  final _broadcastAddressController = TextEditingController();
   Color _selectedColor = Colors.white; // Default color is white
+
+  // Declare the controller
+  late TextEditingController _broadcastAddressController;
+  static const String _defaultBroadcastAddress = '255.255.255.255';
 
   // Function to show color picker
   void _pickColor() {
@@ -61,6 +64,13 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
       );
       Navigator.of(context).pop(newComputer); // Return the new computer
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the controller with the default text
+    _broadcastAddressController = TextEditingController(text: _defaultBroadcastAddress);
   }
 
   @override
