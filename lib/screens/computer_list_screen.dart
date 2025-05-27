@@ -212,6 +212,19 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                     itemCount: computers.length,
                     itemBuilder: (context, index) {
                       final computer = computers[index];
+
+                      // Determine LED colors based on some logic or keep them static for now
+                      // Example: Static colors or colors based on some computer property
+                      final Color led1Color = Colors.green; // Example: online status (needs logic)
+                      final Color led2Color = Colors.grey;  // Example: another status
+
+                      // Text color based on card background
+                      final bool isDarkBackground = computer.color != null &&
+                          ThemeData.estimateBrightnessForColor(Color(computer.color!)) == Brightness.dark;
+                      final Color textColor = isDarkBackground ? Colors.white : Colors.black87;
+                      final Color iconColor = isDarkBackground ? Colors.white : Theme.of(context).colorScheme.primary;
+
+
                       return Slidable(
                         key: ValueKey(computer.macAddress),
                         endActionPane: ActionPane(
@@ -299,59 +312,51 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                               vertical: 4.0,
                             ),
                             elevation: 2.0,
-                            child: ListTile(
-                              // 1. Add the icon to the far left
-                              leading: Icon(
-                                Icons.computer, // Or any other icon you prefer
-                                size: 36.0, // Adjust size as needed
-                                color:
-                                    computer.color != null &&
-                                            ThemeData.estimateBrightnessForColor(
-                                                  Color(computer.color!),
-                                                ) ==
-                                                Brightness.dark
-                                        ? Colors.white
-                                        : Theme.of(context).colorScheme.primary,
-                              ),
-                              // 2. Make the computer name more prominent
-                              title: Text(
-                                computer.name,
-                                style: TextStyle(
-                                  fontSize: 18.0, // Increase font size
-                                  fontWeight: FontWeight.bold, // Make it bold
-                                  // Adjust text color for visibility
-                                  color:
-                                      computer.color != null &&
-                                              ThemeData.estimateBrightnessForColor(
-                                                    Color(computer.color!),
-                                                  ) ==
-                                                  Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black87, // Or theme default
-                                ),
-                              ),
-                              // 3. Make the MAC address less prominent
-                              subtitle: Text(
-                                computer.macAddress,
-                                style: TextStyle(
-                                  fontSize: 13.0, // Smaller font size
-                                  // Adjust subtitle color for visibility
-                                  color:
-                                      computer.color != null &&
-                                              ThemeData.estimateBrightnessForColor(
-                                                    Color(computer.color!),
-                                                  ) ==
-                                                  Brightness.dark
-                                          ? Colors.white70
-                                          : Colors.grey[600],
-                                ),
-                              ),
-                              // Optional: Add some padding if needed
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 8.0,
-                                horizontal: 16.0,
-                              ),
-                            ),
+                            child: Padding( // Add Padding around the ListTile content if needed
+                              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                              child: Row( // Use a Row for horizontal layout: Icon | Column (Name, LEDs)
+                                children: [
+                                  // 1. Icon on the far left
+                                  Icon(
+                                    Icons.computer,
+                                    size: 36.0,
+                                    color: iconColor,
+                                  ),
+                                  const SizedBox(width: 12.0), // Spacing between icon and text content
+
+                                  // 2. Column for Name and LED indicators
+                                  Expanded( // To ensure text and LEDs take available space and wrap if necessary
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start, // Align text and LEDs to the left
+                                      mainAxisSize: MainAxisSize.min, // Column should take minimum vertical space
+                                      children: [
+                                        // Computer Name
+                                        Text(
+                                          computer.name,
+                                          style: TextStyle(
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.bold,
+                                            color: textColor,
+                                          ),
+                                          overflow: TextOverflow.ellipsis, // Handle long names
+                                        ),
+                                        const SizedBox(height: 6.0), // Spacing between name and LEDs
+
+                                        // LED Indicators Row
+                                        Row(
+                                          children: [
+                                            LedIndicator(color: led1Color, isGlowing: true, text: "local",), // First LED
+                                            const SizedBox(width: 6.0),    // Spacing between LEDs
+                                            LedIndicator(color: led2Color, text: "offline",), // Second LED
+                                            // Add more LEDs if needed
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Optional: Add a trailing widget here if needed, like a settings icon or status text
+                                ],
+                              ),),
                           ),
                         ),
                       );
@@ -364,6 +369,81 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+// In computer_list_screen.dart or your custom widgets file
+
+class LedIndicator extends StatelessWidget {
+  final Color color;
+  final String? text; // Text to display on the LED
+  final TextStyle textStyle;
+  final Color bezelColor;
+  final double width;
+  final double height;
+  final double bezelWidth;
+  final bool isGlowing;
+
+  const LedIndicator({
+    super.key,
+    required this.color,
+    this.text,
+    this.textStyle = const TextStyle(fontSize: 14,
+        color: Colors.white,
+        fontWeight: FontWeight.bold), // Default style
+    this.bezelColor = Colors.black54,
+    this.width = 120.0, // May need to be wider for text
+    this.height = 24.0, // May need to be taller for text
+    this.bezelWidth = 1.0,
+    this.isGlowing = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // ... (boxShadows logic remains the same as before) ...
+    final List<BoxShadow> boxShadows = [];
+    if (isGlowing) {
+      boxShadows.add(
+        BoxShadow(
+          color: color.withOpacity(0.7),
+          blurRadius: 6.0,
+          spreadRadius: 2.0,
+        ),
+      );
+    } else {
+      boxShadows.add(
+        BoxShadow(
+          color: color.withOpacity(0.5),
+          blurRadius: 2.0,
+          spreadRadius: 0.5,
+        ),
+      );
+    }
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(height / 4),
+        // Might want less rounding with text
+        border: Border.all(
+          color: bezelColor,
+          width: bezelWidth,
+        ),
+        boxShadow: boxShadows,
+      ),
+      child: text != null
+          ? Center(
+        child: Text(
+          text!,
+          style: textStyle,
+          overflow: TextOverflow.ellipsis, // Prevent overflow
+          textAlign: TextAlign.center,
+        ),
+      )
+          : null,
     );
   }
 }
