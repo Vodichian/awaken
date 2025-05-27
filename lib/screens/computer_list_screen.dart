@@ -3,17 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_ce_flutter/adapters.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../models/computer.dart';
 import '../services/wol_service.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
+import '../utils/globals.dart';
 import 'add_computer_dialog.dart';
 import 'edit_computer_dialog.dart';
 import 'settings_screen.dart';
-
-var logger = Logger(printer: PrettyPrinter());
 
 class ComputerListScreen extends StatefulWidget {
   const ComputerListScreen({super.key});

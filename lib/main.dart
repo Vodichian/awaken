@@ -7,9 +7,6 @@ import 'package:window_size/window_size.dart';
 import 'models/computer.dart';
 import 'screens/computer_list_screen.dart';
 import 'package:awaken/hive/hive_registrar.g.dart';
-import 'package:logger/logger.dart';
-
-var logger = Logger(printer: PrettyPrinter());
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,12 +28,15 @@ void main() async {
   final settingsBox = await Hive.openBox('settingsBox');
 
   runApp(
-    MultiProvider( // Use MultiProvider
+    MultiProvider(
+      // Use MultiProvider
       providers: [
-        Provider<Box<Computer>>.value( // Provide the computerBox
+        Provider<Box<Computer>>.value(
+          // Provide the computerBox
           value: computerBox,
         ),
-        Provider<Box<dynamic>>.value( // Provide the settingsBox
+        Provider<Box<dynamic>>.value(
+          // Provide the settingsBox
           value: settingsBox,
         ),
       ],

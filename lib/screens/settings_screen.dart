@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -11,8 +10,7 @@ import 'dart:io';
 import 'dart:convert';
 
 import '../models/computer.dart';
-
-var logger = Logger(printer: PrettyPrinter());
+import '../utils/globals.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

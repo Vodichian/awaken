@@ -1,8 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:logger/logger.dart';
 
-var logger = Logger(printer: PrettyPrinter());
+import '../utils/globals.dart';
 
 class WolService {
   Future<void> sendMagicPacket(
@@ -47,7 +46,8 @@ class WolService {
     // Try to parse as a general IPv4 address.
     // InternetAddress.tryParse will return null if the format is invalid.
     final InternetAddress? internetAddress = InternetAddress.tryParse(
-        addressString);
+      addressString,
+    );
 
     if (internetAddress == null ||
         internetAddress.type != InternetAddressType.IPv4) {
@@ -71,7 +71,8 @@ class WolService {
         // For simplicity in this example, we'll accept any valid IPv4 address
         // that isn't clearly something else (like loopback).
         // More sophisticated subnet-based validation is complex without network interface info.
-        if (internetAddress.isLoopback || internetAddress.isLinkLocal ||
+        if (internetAddress.isLoopback ||
+            internetAddress.isLinkLocal ||
             internetAddress.isMulticast) {
           // Typically not used as WoL broadcast destinations, though link-local might work in some ad-hoc scenarios.
           // For WoL, we generally want a subnet broadcast or the limited broadcast.
