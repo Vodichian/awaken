@@ -21,13 +21,14 @@ class ComputerAdapter extends TypeAdapter<Computer> {
       macAddress: fields[1] as String,
       broadcastAddress: fields[2] as String,
       color: (fields[3] as num?)?.toInt(),
+      wanIpAddress: fields[4] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Computer obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -35,7 +36,9 @@ class ComputerAdapter extends TypeAdapter<Computer> {
       ..writeByte(2)
       ..write(obj.broadcastAddress)
       ..writeByte(3)
-      ..write(obj.color);
+      ..write(obj.color)
+      ..writeByte(4)
+      ..write(obj.wanIpAddress);
   }
 
   @override

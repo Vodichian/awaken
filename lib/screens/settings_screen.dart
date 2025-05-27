@@ -74,6 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final bool? confirmed = await _showOverwriteConfirmationDialog();
       if (confirmed != true) {
         // User cancelled the overwrite
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Import cancelled by user.')),
         );
@@ -215,6 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               .toLowerCase(); // Normalize MAC for comparison
       final String broadcastAddress = item['broadcastAddress'] as String? ?? '';
       final int color = (item['color'] as int?) ?? Colors.white.toARGB32();
+      final String wanIpAddress = item['wanIpAddress'] as String? ?? '';
 
       if (!overwrite) {
         // Create a signature for the current item from JSON to check for duplicates
@@ -236,6 +238,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           macAddress: macAddress, // Use the (potentially normalized) macAddress
           broadcastAddress: broadcastAddress,
           color: color,
+          wanIpAddress: wanIpAddress,
         );
         // If overwriting, all existing entries are already cleared.
         // If not overwriting, we've already checked for duplicates.
@@ -390,6 +393,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'macAddress': computer.macAddress,
                 'broadcastAddress': computer.broadcastAddress,
                 'color': computer.color, // Export color as well
+                'wanIpAddress': computer.wanIpAddress,
               },
             )
             .toList();

@@ -5,7 +5,7 @@ nextTypeId: 1
 types:
   Computer:
     typeId: 0
-    nextIndex: 4
+    nextIndex: 5
     fields:
       name:
         index: 0
@@ -15,3 +15,5 @@ types:
         index: 2
       color:
         index: 3
+      wanIpAddress:
+        index: 4

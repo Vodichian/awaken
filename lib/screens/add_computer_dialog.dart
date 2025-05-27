@@ -14,6 +14,7 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _macAddressController = TextEditingController();
+  final _wanIpAddressController = TextEditingController();
   Color _selectedColor = Colors.white; // Default color is white
 
   // Declare the controller
@@ -51,6 +52,7 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
     _nameController.dispose();
     _macAddressController.dispose();
     _broadcastAddressController.dispose();
+    _wanIpAddressController.dispose();
     super.dispose();
   }
 
@@ -61,6 +63,7 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
         macAddress: _macAddressController.text,
         broadcastAddress: _broadcastAddressController.text,
         color: _selectedColor.toARGB32(),
+        wanIpAddress: _wanIpAddressController.text,
       );
       Navigator.of(context).pop(newComputer); // Return the new computer
     }
@@ -121,6 +124,15 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
                       return 'Invalid broadcast address format';
                     }
                   }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _wanIpAddressController,
+                decoration: const InputDecoration(
+                    labelText: 'WAN IP Address'),
+                validator: (value) {
+                  // TODO replace with a real validator
                   return null;
                 },
               ),

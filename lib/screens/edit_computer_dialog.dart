@@ -18,6 +18,7 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
   late TextEditingController _nameController;
   late TextEditingController _macAddressController;
   late TextEditingController _broadcastAddressController;
+  late TextEditingController _wanIPAddressController;
   late Color _selectedColor;
 
   @override
@@ -32,6 +33,8 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
     _selectedColor = widget.computerToEdit.color != null
         ? Color(widget.computerToEdit.color!)
         : Colors.white; // Default if no color was set
+    _wanIPAddressController =
+        TextEditingController(text: widget.computerToEdit.wanIpAddress);
   }
 
   @override
@@ -40,6 +43,7 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
     _nameController.dispose();
     _macAddressController.dispose();
     _broadcastAddressController.dispose();
+    _wanIPAddressController.dispose();
     super.dispose();
   }
 
@@ -88,6 +92,7 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
         macAddress: _macAddressController.text,
         broadcastAddress: _broadcastAddressController.text,
         color: _selectedColor.toARGB32(),
+        wanIpAddress: _wanIPAddressController.text,
       );
       // Return the updated computer object
       Navigator.of(context).pop(updatedComputer);
@@ -142,6 +147,15 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
                       return 'Invalid broadcast address format';
                     }
                   }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _wanIPAddressController,
+                decoration:
+                const InputDecoration(labelText: 'WAN IP Address'),
+                validator: (value) {
+                  // TODO: replace with a real validator
                   return null;
                 },
               ),
