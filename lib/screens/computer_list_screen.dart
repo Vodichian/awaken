@@ -406,7 +406,7 @@ class LedIndicator extends StatelessWidget {
     if (isGlowing) {
       boxShadows.add(
         BoxShadow(
-          color: color.withOpacity(0.7),
+          color: color.withValues(alpha: 0.7),
           blurRadius: 6.0,
           spreadRadius: 2.0,
         ),
@@ -414,7 +414,7 @@ class LedIndicator extends StatelessWidget {
     } else {
       boxShadows.add(
         BoxShadow(
-          color: color.withOpacity(0.5),
+          color: color.withValues(alpha: 0.5),
           blurRadius: 2.0,
           spreadRadius: 0.5,
         ),
