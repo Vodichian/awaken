@@ -37,8 +37,8 @@ class _ComputerFormDialogState extends State<ComputerFormDialog> {
         text: widget.computer?.wanIpAddress ?? widget.initialWanIP ?? '');
     _notesController =
         TextEditingController(text: '');
-    // _notesController =
-    //     TextEditingController(text: widget.computer?.notes ?? '');
+    _notesController =
+        TextEditingController(text: widget.computer?.notes ?? '');
     _selectedColor = widget.computer?.color != null
         ? Color(widget.computer!.color!)
         : Colors.white; // Default if no color was set
@@ -124,6 +124,7 @@ class _ComputerFormDialogState extends State<ComputerFormDialog> {
                     return 'Please enter a MAC address';
                   }
                   // Basic MAC address format validation (can be improved)
+                  // TODO: replace with WolService validator
                   final macRegex = RegExp(
                       r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$');
                   if (!macRegex.hasMatch(value)) {
@@ -156,6 +157,7 @@ class _ComputerFormDialogState extends State<ComputerFormDialog> {
                     // if (!networkService.isValidPublicIpV4Format(value)) {
                     //   return 'Invalid or private IP format';
                     // }
+                    //TODO: replace with NetworkServices validator
                     final ipRegex = RegExp(
                         r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$');
                     if (!ipRegex.hasMatch(value)) {
@@ -172,6 +174,7 @@ class _ComputerFormDialogState extends State<ComputerFormDialog> {
                     hintText: "192.168.1.255",
                     icon: Icon(Icons.settings_ethernet)),
                 validator: (value) {
+                  // TODO: replace with NetworkServices validator
                   if (value != null && value.isNotEmpty) {
                     final ipRegex = RegExp(
                         r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$');
@@ -245,9 +248,9 @@ class _ComputerFormDialogState extends State<ComputerFormDialog> {
                     ? _wanIPController.text
                     : null,
                 // Save WAN IP
-                // notes: _notesController.text.isNotEmpty
-                //     ? _notesController.text
-                //     : null,
+                notes: _notesController.text.isNotEmpty
+                    ? _notesController.text
+                    : null,
                 color: _selectedColor.toARGB32(),
               );
               // If editing, preserve original Hive key by passing back the modified object

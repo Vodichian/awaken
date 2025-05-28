@@ -215,6 +215,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final String broadcastAddress = item['broadcastAddress'] as String? ?? '';
       final int color = (item['color'] as int?) ?? Colors.white.toARGB32();
       final String wanIpAddress = item['wanIpAddress'] as String? ?? '';
+      final String notes = item['notes'] as String? ?? '';
 
       if (!overwrite) {
         // Create a signature for the current item from JSON to check for duplicates
@@ -237,6 +238,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           broadcastAddress: broadcastAddress,
           color: color,
           wanIpAddress: wanIpAddress,
+          notes: notes,
         );
         // If overwriting, all existing entries are already cleared.
         // If not overwriting, we've already checked for duplicates.
@@ -392,6 +394,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 'broadcastAddress': computer.broadcastAddress,
                 'color': computer.color, // Export color as well
                 'wanIpAddress': computer.wanIpAddress,
+                'notes': computer.notes,
               },
             )
             .toList();

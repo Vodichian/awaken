@@ -17,6 +17,7 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
   final _nameController = TextEditingController();
   final _macAddressController = TextEditingController();
   final _wanIpAddressController = TextEditingController();
+  final _notesController = TextEditingController();
   Color _selectedColor = Colors.white; // Default color is white
   final NetworkService _networkService = NetworkService();
 
@@ -56,6 +57,7 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
     _macAddressController.dispose();
     _broadcastAddressController.dispose();
     _wanIpAddressController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -67,6 +69,7 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
         broadcastAddress: _broadcastAddressController.text,
         color: _selectedColor.toARGB32(),
         wanIpAddress: _wanIpAddressController.text,
+        notes: _notesController.text,
       );
       Navigator.of(context).pop(newComputer); // Return the new computer
     }

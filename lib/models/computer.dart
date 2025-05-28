@@ -6,6 +6,7 @@ class Computer extends HiveObject {
   String broadcastAddress; // Or specific IP if not broadcasting
   int? color;
   String? wanIpAddress; // used to fingerprint LAN
+  String? notes;
 
   Computer({
     required this.name,
@@ -13,10 +14,12 @@ class Computer extends HiveObject {
     required this.broadcastAddress,
     required this.color,
     required this.wanIpAddress,
+    required this.notes,
   });
 
   @override
   String toString() {
-    return '$name: , MAC = $macAddress, broadcastAddress = $broadcastAddress, color = $color, wanIpAddress = $wanIpAddress';
+    return '$name: , MAC = $macAddress, broadcastAddress = $broadcastAddress, color = $color, '
+        'wanIpAddress = $wanIpAddress, notes = $notes';
   }
 }

@@ -95,6 +95,7 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
         broadcastAddress: _broadcastAddressController.text,
         color: _selectedColor.toARGB32(),
         wanIpAddress: _wanIPAddressController.text,
+        notes: '',
       );
       // Return the updated computer object
       Navigator.of(context).pop(updatedComputer);
