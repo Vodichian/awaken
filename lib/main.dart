@@ -1,12 +1,11 @@
 import 'dart:io';
 
-import 'package:awaken/screens/computer_list_screen_V2.dart';
+import 'package:awaken/screens/computer_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import 'package:window_size/window_size.dart';
 import 'models/computer.dart';
-import 'screens/computer_list_screen.dart';
 import 'package:awaken/hive/hive_registrar.g.dart';
 
 void main() async {
@@ -54,7 +53,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Awaken',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const ComputerListScreenV2(), // Set your computer list screen as
+      home: const ComputerListScreen(), // Set your computer list screen as
       // home: const ComputerListScreen(), // Set your computer list screen as
       // home
     );
