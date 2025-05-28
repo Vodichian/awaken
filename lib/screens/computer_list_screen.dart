@@ -278,12 +278,6 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                           led1Text = "No Net"; // Can't fetch current WAN
                         }
 
-                        final Color led2Color =
-                            Colors
-                                .blue; // Example: local network status (needs separate logic)
-                        final String led2Text =
-                            "LAN?"; // Placeholder for LAN status
-
                         final bool isDarkBackground =
                             computer.color != null &&
                             ThemeData.estimateBrightnessForColor(
@@ -461,11 +455,6 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                                                 color: led1Color,
                                                 isGlowing: isWanMatch,
                                                 text: led1Text,
-                                              ),
-                                              const SizedBox(width: 6.0),
-                                              LedIndicator(
-                                                color: led2Color,
-                                                text: led2Text,
                                               ),
                                               // Placeholder
                                             ],

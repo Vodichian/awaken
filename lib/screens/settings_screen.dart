@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -20,26 +21,20 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  String _appVersion = 'Loading...'; // Placeholder for the version
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _broadcastAddressController;
   late Box<dynamic> _settingsBox;
   late Box<Computer> _computerBox;
 
   // State for the overwrite checkbox
-  bool _overwriteExistingData =
-      false;
+  bool _overwriteExistingData = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize boxes in initState as they are available from Provider immediately
-    // if the Provider is above this widget in the tree.
-    // Ensure that Provider.of is called with listen: false if you don't need
-    // this widget to rebuild when the Box instance itself changes (rare).
-    // The ValueListenableBuilder for computerBox will handle UI updates for data changes.
     _settingsBox = Provider.of<Box<dynamic>>(context, listen: false);
     _computerBox = Provider.of<Box<Computer>>(context, listen: false);
-
     final currentBroadcastAddress = _settingsBox.get(
       'broadcastAddress',
       defaultValue: '255.255.255.255',
@@ -47,9 +42,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _broadcastAddressController = TextEditingController(
       text: currentBroadcastAddress,
     );
+    _loadAppVersion();
   }
 
-  // Remove didChangeDependencies if only used for box initialization now done in initState
+  Future<void> _loadAppVersion() async {
+    try {
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      setState(() {
+        _appVersion = 'Version: ${packageInfo.version} (Build: ${packageInfo.buildNumber})';
+      });
+    } catch (e) {
+      setState(() {
+        _appVersion = 'Version: Not available';
+      });
+      logger.e('Failed to get app version: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -234,7 +242,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       try {
         final computer = Computer(
           name: name,
-          macAddress: macAddress, // Use the (potentially normalized) macAddress
+          macAddress: macAddress,
+          // Use the (potentially normalized) macAddress
           broadcastAddress: broadcastAddress,
           color: color,
           wanIpAddress: wanIpAddress,
@@ -513,6 +522,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16.0),
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: const Text('Application Version'),
+                  subtitle: Text(_appVersion),
+                  onTap: () {
+                    // Optional: Show more details or an about dialog
+                    showDialog(
+                      context: context,
+                      builder: (context) => AboutDialog(
+                        applicationName: 'Awaken',
+                        applicationVersion: _appVersion.replaceFirst('Version: ', ''), // Remove prefix for dialog
+                        applicationIcon: Image.asset('assets/icon/awaken.png', width: 48, height: 48),
+                        applicationLegalese: '© ${DateTime.now().year} Vodichian Projects',
+                        children: const <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(top: 15),
+                            child: Text('Thank you for using Awaken!'),
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
