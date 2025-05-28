@@ -1,7 +1,9 @@
 // In computer_form_dialog.dart
+import 'package:awaken/services/wol_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import '../models/computer.dart'; // Your model
+import '../models/computer.dart';
+import '../services/network_service.dart'; // Your model
 // Optional: If you use a color picker
 // import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
@@ -124,7 +126,6 @@ class _ComputerFormDialogState extends State<ComputerFormDialog> {
                     return 'Please enter a MAC address';
                   }
                   // Basic MAC address format validation (can be improved)
-                  // TODO: replace with WolService validator
                   final macRegex = RegExp(
                       r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$');
                   if (!macRegex.hasMatch(value)) {
@@ -139,29 +140,22 @@ class _ComputerFormDialogState extends State<ComputerFormDialog> {
                   labelText: 'Target Public WAN IP (Optional)',
                   hintText: "e.g., 8.8.8.8",
                   icon: const Icon(Icons.public),
-                  // Optionally add a button to fill with current WAN IP
-                  // suffixIcon: IconButton(
-                  //   icon: Icon(Icons.my_location),
-                  //   tooltip: "Use current WAN IP",
-                  //   onPressed: () {
-                  //     if (widget.initialWanIP != null) {
-                  //       _wanIPController.text = widget.initialWanIP!;
-                  //     }
-                  //   },
-                  // ),
+                  // add a button to fill with current WAN IP
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.my_location),
+                    tooltip: "Use current WAN IP",
+                    onPressed: () {
+                      if (widget.initialWanIP != null) {
+                        _wanIPController.text = widget.initialWanIP!;
+                      }
+                    },
+                  ),
                 ),
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
-                    // Use your NetworkService validator if you want to be strict about "public" format
-                    // final networkService = NetworkService();
-                    // if (!networkService.isValidPublicIpV4Format(value)) {
-                    //   return 'Invalid or private IP format';
-                    // }
-                    //TODO: replace with NetworkServices validator
-                    final ipRegex = RegExp(
-                        r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$');
-                    if (!ipRegex.hasMatch(value)) {
-                      return 'Invalid IP address format';
+                    final networkService = NetworkService();
+                    if (!networkService.isValidPublicIpV4Format(value)) {
+                      return 'Invalid or private IP format';
                     }
                   }
                   return null;
@@ -174,12 +168,9 @@ class _ComputerFormDialogState extends State<ComputerFormDialog> {
                     hintText: "192.168.1.255",
                     icon: Icon(Icons.settings_ethernet)),
                 validator: (value) {
-                  // TODO: replace with NetworkServices validator
                   if (value != null && value.isNotEmpty) {
-                    final ipRegex = RegExp(
-                        r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$');
-                    if (!ipRegex.hasMatch(value)) {
-                      return 'Invalid IP address format';
+                    if (!WolService.isValidBroadcastAddress(value)) {
+                      return 'Invalid broadcast address format';
                     }
                   }
                   return null;
