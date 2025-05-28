@@ -287,7 +287,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                                 'WoL packet failed to send on long press. App will not close.',
                               );
                               // Optionally, show a specific message for long-press failure if desired
-                              if (mounted) {
+                              if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text(
