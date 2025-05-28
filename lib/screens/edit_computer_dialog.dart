@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/computer.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
+import '../services/network_service.dart';
 import '../services/wol_service.dart';
 
 class EditComputerDialog extends StatefulWidget {
@@ -20,6 +21,7 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
   late TextEditingController _broadcastAddressController;
   late TextEditingController _wanIPAddressController;
   late Color _selectedColor;
+  final NetworkService _networkService = NetworkService();
 
   @override
   void initState() {
@@ -155,8 +157,15 @@ class _EditComputerDialogState extends State<EditComputerDialog> {
                 decoration:
                 const InputDecoration(labelText: 'WAN IP Address'),
                 validator: (value) {
-                  // TODO: replace with a real validator
-                  return null;
+                  if (value == null || value.isEmpty) {
+                    return null; // this is an optional parameter
+                  } else {
+                    if(_networkService.isValidPublicIpV4Format(value)) {
+                      return null;
+                    } else {
+                      return 'Invalid WAN IP address format';
+                    }
+                  }
                 },
               ),
               const SizedBox(height: 20),

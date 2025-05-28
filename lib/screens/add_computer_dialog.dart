@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/computer.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
+import '../services/network_service.dart';
+
 class AddComputerDialog extends StatefulWidget {
   const AddComputerDialog({super.key});
 
@@ -16,6 +18,7 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
   final _macAddressController = TextEditingController();
   final _wanIpAddressController = TextEditingController();
   Color _selectedColor = Colors.white; // Default color is white
+  final NetworkService _networkService = NetworkService();
 
   // Declare the controller
   late TextEditingController _broadcastAddressController;
@@ -132,9 +135,15 @@ class _AddComputerDialogState extends State<AddComputerDialog> {
                 decoration: const InputDecoration(
                     labelText: 'WAN IP Address'),
                 validator: (value) {
-                  // TODO replace with a real validator
-                  return null;
-                },
+                  if (value == null || value.isEmpty) {
+                    return null; // this is an optional parameter
+                  } else {
+                    if(_networkService.isValidPublicIpV4Format(value)) {
+                      return null;
+                    } else {
+                      return 'Invalid WAN IP address format';
+                    }
+                  }                },
               ),
               const SizedBox(height: 20),
               Row(
