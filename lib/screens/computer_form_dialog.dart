@@ -248,7 +248,7 @@ class _ComputerFormDialogState extends State<ComputerFormDialog> {
                 // notes: _notesController.text.isNotEmpty
                 //     ? _notesController.text
                 //     : null,
-                color: _selectedColor?.value,
+                color: _selectedColor.toARGB32(),
               );
               // If editing, preserve original Hive key by passing back the modified object
               // The list screen will use computer.key to put it back
