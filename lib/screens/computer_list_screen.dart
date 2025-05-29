@@ -325,88 +325,90 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                               ),
                             ],
                           ),
-                          child: GestureDetector(
-                            onTap: () {
-                              // Only allow WoL if WAN IP matches, or if no WAN IP is set for the computer (LAN only)
-                              if (isWanMatch ||
-                                  computer.wanIpAddress == null ||
-                                  computer.wanIpAddress!.isEmpty) {
-                                _wakeUpComputer(computer);
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'WAN IP mismatch for ${computer.name}. WoL packet not sent.',
+                          child: Card(
+                            color:
+                                computer.color != null
+                                    ? Color(computer.color!)
+                                    : Theme.of(context).cardTheme.color ??
+                                        Colors.white,
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                              vertical: 4.0,
+                            ),
+                            elevation: 2.0,
+                            clipBehavior: Clip.antiAlias,
+                            child: InkWell(
+                              enableFeedback: true,
+                              onTap: () {
+                                // Only allow WoL if WAN IP matches, or if no WAN IP is set for the computer (LAN only)
+                                if (isWanMatch ||
+                                    computer.wanIpAddress == null ||
+                                    computer.wanIpAddress!.isEmpty) {
+                                  _wakeUpComputer(computer);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'WAN IP mismatch for ${computer.name}. WoL packet not sent.',
+                                      ),
+                                      backgroundColor: Colors.orange,
                                     ),
-                                    backgroundColor: Colors.orange,
-                                  ),
-                                );
-                              }
-                            },
-                            onLongPress: () async {
-                              logger.d(
-                                'Long press detected on ${computer.name}',
-                              );
-                              if (isWanMatch ||
-                                  computer.wanIpAddress == null ||
-                                  computer.wanIpAddress!.isEmpty) {
-                                bool success = await _wakeUpComputer(
-                                  computer,
-                                  showSuccessSnackbar: false,
-                                );
-                                if (success) {
-                                  logger.d(
-                                    'WoL packet sent successfully on long press. Closing app.',
                                   );
-                                  if (Platform.isAndroid || Platform.isIOS) {
-                                    SystemNavigator.pop();
-                                  } else {
-                                    logger.w(
-                                      'App closing not implemented for this platform via long press.',
+                                }
+                              },
+                              onLongPress: () async {
+                                logger.d(
+                                  'Long press detected on ${computer.name}',
+                                );
+                                if (isWanMatch ||
+                                    computer.wanIpAddress == null ||
+                                    computer.wanIpAddress!.isEmpty) {
+                                  bool success = await _wakeUpComputer(
+                                    computer,
+                                    showSuccessSnackbar: false,
+                                  );
+                                  if (success) {
+                                    logger.d(
+                                      'WoL packet sent successfully on long press. Closing app.',
                                     );
+                                    if (Platform.isAndroid || Platform.isIOS) {
+                                      SystemNavigator.pop();
+                                    } else {
+                                      logger.w(
+                                        'App closing not implemented for this platform via long press.',
+                                      );
+                                    }
+                                  } else {
+                                    logger.d(
+                                      'WoL packet failed to send on long press. App will not close.',
+                                    );
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Failed to send WoL packet. App not closing.',
+                                          ),
+                                          backgroundColor: Colors.orange,
+                                        ),
+                                      );
+                                    }
                                   }
                                 } else {
                                   logger.d(
-                                    'WoL packet failed to send on long press. App will not close.',
+                                    'WAN IP mismatch on long press. App will not close.',
                                   );
-                                  if (context.mounted) {
+                                  if (mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
+                                      SnackBar(
                                         content: Text(
-                                          'Failed to send WoL packet. App not closing.',
+                                          'WAN IP mismatch for ${computer.name}. App not closing.',
                                         ),
                                         backgroundColor: Colors.orange,
                                       ),
                                     );
                                   }
                                 }
-                              } else {
-                                logger.d(
-                                  'WAN IP mismatch on long press. App will not close.',
-                                );
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'WAN IP mismatch for ${computer.name}. App not closing.',
-                                      ),
-                                      backgroundColor: Colors.orange,
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            child: Card(
-                              color:
-                                  computer.color != null
-                                      ? Color(computer.color!)
-                                      : Theme.of(context).cardTheme.color ??
-                                          Colors.white,
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 4.0,
-                              ),
-                              elevation: 2.0,
+                              },
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 8.0,
