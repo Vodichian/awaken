@@ -89,12 +89,12 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.vodichian" "\0"
-            VALUE "FileDescription", "wakeup" "\0"
+            VALUE "CompanyName", "Richard N. McDonald" "\0"
+            VALUE "FileDescription", "awaken" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "wakeup" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.vodichian. All rights reserved." "\0"
-            VALUE "OriginalFilename", "wakeup.exe" "\0"
+            VALUE "InternalName", "awaken" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 Richard N. McDonald. All rights reserved." "\0"
+            VALUE "OriginalFilename", "awaken.exe" "\0"
             VALUE "ProductName", "wakeup" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END

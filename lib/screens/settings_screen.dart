@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import 'dart:convert';
 
@@ -521,7 +522,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16.0),
+                SizedBox(height: 16.0),
                 ListTile(
                   leading: const Icon(Icons.info_outline),
                   title: const Text('Application Version'),
@@ -534,12 +535,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         applicationName: 'Awaken',
                         applicationVersion: _appVersion.replaceFirst('Version: ', ''), // Remove prefix for dialog
                         applicationIcon: Image.asset('assets/icon/awaken.png', width: 48, height: 48),
-                        applicationLegalese: '© ${DateTime.now().year} Vodichian Projects',
-                        children: const <Widget>[
-                          Padding(
+                        applicationLegalese: '© ${DateTime.now().year} Richard N. McDonald',
+                        children: <Widget>[
+                          const Padding(
                             padding: EdgeInsets.only(top: 15),
-                            child: Text('Thank you for using Awaken!'),
-                          )
+                            child: Text('Thank you for using Awaken! I hope you have found this application to be useful.'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Row( // Using Row to potentially add an icon later
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                // Optional: GitHub Icon
+                                // Padding(
+                                //   padding: const EdgeInsets.only(right: 8.0),
+                                //   child: Icon(Icons.code), // Or a BrandIcon if you have font_awesome_flutter
+                                // ),
+                                InkWell(
+                                  onTap: () async {
+                                    final Uri url = Uri.parse('https://github.com/Vodichian/awaken'); // <-- REPLACE THIS
+                                    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                                      // Optional: Show an error message if launching fails
+                                      if (context.mounted) { // Check if the widget is still in the tree
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Could not launch $url')),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 4.0), // Padding for better tap target
+                                    child: Text(
+                                      'View Project on GitHub',
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.primary, // Make it look like a link
+                                        decoration: TextDecoration.underline,
+                                        decorationColor: Theme.of(context).colorScheme.primary, // Underline color match
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     );
