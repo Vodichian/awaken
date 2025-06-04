@@ -50,7 +50,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
       setState(() {
-        _appVersion = 'Version: ${packageInfo.version} (Build: ${packageInfo.buildNumber})';
+        _appVersion =
+            'Version: ${packageInfo.version} (Build: ${packageInfo.buildNumber})';
       });
     } catch (e) {
       setState(() {
@@ -444,10 +445,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: ElevatedButton(
                     onPressed: _saveSettings,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: Colors.green,
+                      // Change the background color
+                      foregroundColor: Colors.white,
+                      // Change the text/icon color
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 15,
+                      ),
+                      // Add padding
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          8,
+                        ),
+                      ),
+                      elevation: 5,
                     ),
-                    child: const Text('Save Settings'),
-                  ),
+                    child: const Row( // Using a Row for icon + text
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.save_alt_outlined),
+                        SizedBox(width: 8),
+                        Text('Save Settings'),
+                      ],
+                    ),                  ),
                 ),
                 const SizedBox(height: 24.0),
                 const Divider(),
@@ -467,8 +492,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: const Icon(Icons.file_upload),
                     label: const Text('Import Data'),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
+                      backgroundColor: Colors.green.shade700, // Change the background color
+                      foregroundColor: Colors.white, // Change the text/icon color
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Add padding
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8), // Optional: rounded corners
+                      ),
+                      elevation: 5, // Optional: Add a bit more shadow
+                    ),//                    ),
                   ),
                 ),
                 // --- Overwrite Checkbox Row ---
@@ -518,8 +553,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: const Icon(Icons.file_download),
                     label: const Text('Export Data'),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
+                      backgroundColor: Colors.blue.shade700, // Change the background color
+                      foregroundColor: Colors.white, // Change the text/icon color
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Add padding
+                      textStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8), // Optional: rounded corners
+                      ),
+                      elevation: 5, // Optional: Add a bit more shadow
+                    ),//                    ),
                   ),
                 ),
                 SizedBox(height: 16.0),
@@ -531,55 +576,93 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // Optional: Show more details or an about dialog
                     showDialog(
                       context: context,
-                      builder: (context) => AboutDialog(
-                        applicationName: 'Awaken',
-                        applicationVersion: _appVersion.replaceFirst('Version: ', ''), // Remove prefix for dialog
-                        applicationIcon: Image.asset('assets/icon/awaken.png', width: 48, height: 48),
-                        applicationLegalese: '© ${DateTime.now().year} Richard N. McDonald',
-                        children: <Widget>[
-                          const Padding(
-                            padding: EdgeInsets.only(top: 15),
-                            child: Text('Thank you for using Awaken! I hope you have found this application to be useful.'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Row( // Using Row to potentially add an icon later
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                // Optional: GitHub Icon
-                                // Padding(
-                                //   padding: const EdgeInsets.only(right: 8.0),
-                                //   child: Icon(Icons.code), // Or a BrandIcon if you have font_awesome_flutter
-                                // ),
-                                InkWell(
-                                  onTap: () async {
-                                    final Uri url = Uri.parse('https://github.com/Vodichian/awaken'); // <-- REPLACE THIS
-                                    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-                                      // Optional: Show an error message if launching fails
-                                      if (context.mounted) { // Check if the widget is still in the tree
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('Could not launch $url')),
-                                        );
-                                      }
-                                    }
-                                  },
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 4.0), // Padding for better tap target
-                                    child: Text(
-                                      'View Project on GitHub',
-                                      style: TextStyle(
-                                        color: Theme.of(context).colorScheme.primary, // Make it look like a link
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: Theme.of(context).colorScheme.primary, // Underline color match
+                      builder:
+                          (context) => AboutDialog(
+                            applicationName: 'Awaken',
+                            applicationVersion: _appVersion.replaceFirst(
+                              'Version: ',
+                              '',
+                            ),
+                            // Remove prefix for dialog
+                            applicationIcon: Image.asset(
+                              'assets/icon/awaken.png',
+                              width: 48,
+                              height: 48,
+                            ),
+                            applicationLegalese:
+                                '© ${DateTime.now().year} Richard N. McDonald',
+                            children: <Widget>[
+                              const Padding(
+                                padding: EdgeInsets.only(top: 15),
+                                child: Text(
+                                  'Thank you for using Awaken! I hope you have found this application to be useful.',
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0,
+                                ),
+                                child: Row(
+                                  // Using Row to potentially add an icon later
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    // Optional: GitHub Icon
+                                    // Padding(
+                                    //   padding: const EdgeInsets.only(right: 8.0),
+                                    //   child: Icon(Icons.code), // Or a BrandIcon if you have font_awesome_flutter
+                                    // ),
+                                    InkWell(
+                                      onTap: () async {
+                                        final Uri url = Uri.parse(
+                                          'https://github.com/Vodichian/awaken',
+                                        ); // <-- REPLACE THIS
+                                        if (!await launchUrl(
+                                          url,
+                                          mode: LaunchMode.externalApplication,
+                                        )) {
+                                          // Optional: Show an error message if launching fails
+                                          if (context.mounted) {
+                                            // Check if the widget is still in the tree
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Could not launch $url',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      },
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 4.0,
+                                        ),
+                                        // Padding for better tap target
+                                        child: Text(
+                                          'View Project on GitHub',
+                                          style: TextStyle(
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                            // Make it look like a link
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor:
+                                                Theme.of(context)
+                                                    .colorScheme
+                                                    .primary, // Underline color match
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
                     );
                   },
                 ),
