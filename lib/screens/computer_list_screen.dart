@@ -11,6 +11,7 @@ import '../widgets/led_indicator.dart';
 import 'computer_form_dialog.dart'; // Your dialog
 import 'settings_screen.dart'; // Your settings screen
 import 'package:hive_ce_flutter/adapters.dart';
+import 'package:vpn_connection_detector/vpn_connection_detector.dart';
 
 class ComputerListScreen extends StatefulWidget {
   const ComputerListScreen({super.key});
@@ -25,20 +26,24 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
   final NetworkService _networkService =
       NetworkService(); // Instance of NetworkService
   String? _currentWanIP; // To store the fetched WAN IP
-  bool _isFetchingWanIP = false;
+  bool _isFetchingFingerprint = false;
+  bool _isVPNConnected = false;
 
   @override
   void initState() {
     super.initState();
     _computerBox = Hive.box<Computer>('computerBox');
-    _fetchCurrentWanIP(); // Fetch WAN IP when the screen initializes
+    _fetchFingerprint(); // Fetch WAN IP when the screen initializes
   }
 
-  Future<void> _fetchCurrentWanIP() async {
-    if (_isFetchingWanIP) return; // Prevent multiple simultaneous fetches
+  /// Fingerprint the current LAN. This consists of identifying the WAN IP and
+  /// checking if a VPN connection is active.
+  Future<void> _fetchFingerprint() async {
+    if (_isFetchingFingerprint) return; // Prevent multiple simultaneous fetches
     setState(() {
-      _isFetchingWanIP = true;
+      _isFetchingFingerprint = true;
     });
+    // Fetch the current WAN IP
     try {
       _currentWanIP = await _networkService.getPublicIpAddress();
       logger.i("Current WAN IP fetched: $_currentWanIP");
@@ -56,7 +61,29 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
     } finally {
       if (mounted) {
         setState(() {
-          _isFetchingWanIP = false;
+          _isFetchingFingerprint = false;
+        });
+      }
+    }
+    // Check if a VPN connection is active
+    try {
+      _isVPNConnected = await VpnConnectionDetector.isVpnActive();
+      logger.d('VPN connection: $_isVPNConnected');
+    } catch (e) {
+      logger.e("Failed to fetch VPN status: $e");
+      // Optionally show a snackbar or message to the user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not fetch VPN status: ${e.toString()}'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFetchingFingerprint = false;
         });
       }
     }
@@ -188,7 +215,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
     ).then((_) {
       // Re-fetch WAN IP if settings might have changed related things,
       // or if user explicitly triggers a refresh there.
-      _fetchCurrentWanIP();
+      _fetchFingerprint();
     });
   }
 
@@ -205,7 +232,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
             title: const Text('Awaken'),
             actions: [
               // Add a refresh button for WAN IP
-              if (_isFetchingWanIP)
+              if (_isFetchingFingerprint)
                 const Padding(
                   padding: EdgeInsets.only(right: 8.0),
                   child: Center(
@@ -223,7 +250,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   tooltip: "Refresh WAN IP",
-                  onPressed: _fetchCurrentWanIP,
+                  onPressed: _fetchFingerprint,
                 ),
               Padding(
                 padding: const EdgeInsets.only(right: 8.0),
@@ -243,7 +270,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                   )
                   : RefreshIndicator(
                     // Optional: Allow pull-to-refresh for WAN IP
-                    onRefresh: _fetchCurrentWanIP,
+                    onRefresh: _fetchFingerprint,
                     child: ListView.builder(
                       itemCount: computers.length,
                       itemBuilder: (context, index) {
@@ -254,6 +281,11 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                             Colors.grey; // Default to grey (unknown/mismatch)
                         String led1Text = "WAN?";
                         bool isWanMatch = false;
+
+                        Color led2Color =
+                            Colors.grey; // Default to grey (unknown/mismatch)
+                        String led2Text = "VPN";
+                        bool isVPNDetected = false;
 
                         if (_currentWanIP != null &&
                             _currentWanIP!.isNotEmpty &&
@@ -268,7 +300,7 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                                 Colors.orange; // Or Colors.red if you prefer
                             led1Text = "WAN Fail";
                           }
-                        } else if (_isFetchingWanIP) {
+                        } else if (_isFetchingFingerprint) {
                           led1Color = Colors.blueGrey;
                           led1Text = "WAN...";
                         } else if (_currentWanIP == null &&
@@ -276,6 +308,14 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                             computer.wanIpAddress!.isNotEmpty) {
                           led1Color = Colors.yellow.shade700;
                           led1Text = "No Net"; // Can't fetch current WAN
+                        }
+
+                        if (_isVPNConnected) {
+                          led2Color = Colors.red;
+                          led2Text = "VPN Detected";
+                          isVPNDetected = true;
+                        } else if (_isFetchingFingerprint) {
+                          led2Color = Colors.blueGrey;
                         }
 
                         final bool isDarkBackground =
@@ -340,16 +380,18 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                             child: InkWell(
                               enableFeedback: true,
                               onTap: () {
-                                // Only allow WoL if WAN IP matches, or if no WAN IP is set for the computer (LAN only)
-                                if (isWanMatch ||
-                                    computer.wanIpAddress == null ||
-                                    computer.wanIpAddress!.isEmpty) {
+                                // Only allow WoL if VPN is disabled and (WAN IP matches, or if no WAN IP is set for the computer
+                                // (LAN only))
+                                if (!isVPNDetected &&
+                                    (isWanMatch ||
+                                        computer.wanIpAddress == null ||
+                                        computer.wanIpAddress!.isEmpty)) {
                                   _wakeUpComputer(computer);
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        'WAN IP mismatch for ${computer.name}. WoL packet not sent.',
+                                        'WAN IP mismatch or VPN detected for ${computer.name}. WoL packet not sent.',
                                       ),
                                       backgroundColor: Colors.orange,
                                     ),
@@ -360,9 +402,10 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                                 logger.d(
                                   'Long press detected on ${computer.name}',
                                 );
-                                if (isWanMatch ||
-                                    computer.wanIpAddress == null ||
-                                    computer.wanIpAddress!.isEmpty) {
+                                if (!isVPNDetected &&
+                                    ((isWanMatch ||
+                                        computer.wanIpAddress == null ||
+                                        computer.wanIpAddress!.isEmpty))) {
                                   bool success = await _wakeUpComputer(
                                     computer,
                                     showSuccessSnackbar: false,
@@ -383,7 +426,9 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                                       'WoL packet failed to send on long press. App will not close.',
                                     );
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         const SnackBar(
                                           content: Text(
                                             'Failed to send WoL packet. App not closing.',
@@ -458,23 +503,33 @@ class _ComputerListScreenState extends State<ComputerListScreen> {
                                                 isGlowing: isWanMatch,
                                                 text: led1Text,
                                               ),
-                                              // Placeholder
+                                              LedIndicator(
+                                                color: led2Color,
+                                                isGlowing: isVPNDetected,
+                                                text: led2Text,
+                                              ),
                                             ],
                                           ),
                                         ],
                                       ),
                                     ),
-                                    // Optional: Add a trailing icon to indicate if WoL is enabled based on WAN match
+                                    // Add a trailing icon to indicate if WoL is enabled based on WAN match
                                     if (computer.wanIpAddress != null &&
                                         computer.wanIpAddress!.isNotEmpty)
                                       Icon(
-                                        isWanMatch
+                                        isWanMatch && !isVPNDetected
                                             ? Icons.power_settings_new
                                             : Icons.public_off,
                                         color:
-                                            isWanMatch
+                                            isWanMatch && !isVPNDetected
                                                 ? Colors.green.shade700
                                                 : Colors.red.shade700,
+                                        size: 20,
+                                      )
+                                    else if (isVPNDetected)
+                                      Icon(
+                                        Icons.public_off,
+                                        color: Colors.red.shade700,
                                         size: 20,
                                       ),
                                   ],
